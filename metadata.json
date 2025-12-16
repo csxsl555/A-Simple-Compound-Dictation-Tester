@@ -1,0 +1,5 @@
+{
+  "name": "Compound Dictation Master",
+  "description": "An interactive compound dictation testing app powered by Gemini. Features auto-grading, dynamic content generation, and high-quality AI speech synthesis.",
+  "requestFramePermissions": []
+}
