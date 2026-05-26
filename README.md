@@ -1,20 +1,52 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Compound Dictation Master (英语复合式听写大师)
 
-# Run and deploy your AI Studio app
+这是一个基于智能 Gemini AI 和 TTS 语音合成的高保真、交互式英语复合式听写能力训练与评测应用。它既支持由 AI 围绕指定主题与难度自动生成测试内容，也支持用户上传自定义文本、指定挖空数量和单词数范围进行智能挖空测试。
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/31b2ca6a-7540-43db-a559-6b1a99b5e27d
+## 🌐 在线体验与使用
 
-## Run Locally
+只要应用处于发布状态，任何人均可通过以下链接直接访问并免费使用该应用：
 
-**Prerequisites:**  Node.js
+👉 **[立即在线体验 Compound Dictation Master](https://ais-pre-kczaqnwv63y4mdsw5ppwxu-306607790018.us-east5.run.app)**
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🌟 核心特色功能
+
+### 1. 双重生成模式
+* **AI 智能主题听写**：只需输入您感兴趣的听写主题并选择难度（初级、中级、高级），Gemini 即可自动为您量身生成一篇听力短文并预埋填空。
+* **用户自定义文本**：支持粘贴您自己准备的英文段落、真题模拟文本，一键将其转化为标准的听写测验。
+
+### 2. 智能自动挖空 (Smart Auto-Cloze)
+* **自定义挖空数量**：自由设置整篇短文需要留出的空白（Blanks）总个数。
+* **自定义单词数范围**：控制每个空白中应该包含的单词数量（例如：设置单个单词，或是 2-3 个单词的短语、完整的复合词组结构）。
+* **非重叠分词算法**：系统内置智能分词排序算法，确保生成的挖空区域均匀分布，完全符合教学场景，并消除格式排版冲突。
+
+### 3. 高质量音频播放器
+* 高保真文本转语音（TTS）播放控制，模拟真实的听力考场环境，支持波形控制、播放速率自适应以及练习进度指示。
+
+### 4. 精准答题对照板 (不再有重叠文字)
+* **彻底告别挤占、遮挡排版的 inline 修改**：提交答案评分后，系统不会直接在正文行的输入框上做叠字修改。
+* **下方一站式解析表**：页面底部会动态展示 **答题对照与解析表 (Answer Comparison Sheet)**，将您写下的内容与源文本正确答案进行逐一对比，并带上鲜明的评判结果（**✓ 正确** 或 **✗ 错误**），视觉观感极为清爽、优雅。
+
+---
+
+## 🛠️ 技术架构
+
+- **前端技术**：React 19 + TypeScript + Vite 6
+- **样式方案**：Tailwind CSS (采用高对比度现代雅致排版，拥有适度的页面留白和顺畅的微交互)
+- **智能后端**：通过服务端代理安全调用最新官方 `@google/genai` TypeScript SDK，保障 API Key 安全不泄露
+- **核心算法**：自主编写的高性能文本分词、间隔检测与非重叠区间随机选取算法
+
+---
+
+## 🚀 本地开发与运行
+
+1. 确保您的开发环境中已配置 `GEMINI_API_KEY` 环境变量。
+2. 安装依赖并启动本地服务器：
+   ```bash
+   npm run dev
+   ```
+3. 打开浏览器并访问 [http://localhost:3000](http://localhost:3000)。
+4. 切换到 **"Create Your Own Test" (自主出题)** 选项卡，立即试用强大的 **智能自动挖空** 参数调节功能！
