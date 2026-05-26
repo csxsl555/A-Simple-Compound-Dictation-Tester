@@ -1,4 +1,4 @@
-# Compound Dictation Master (英语复合式听写大师)
+# Compound Dictation Master
 
 这是一个基于智能 Gemini AI 和 TTS 语音合成的高保真、交互式英语复合式听写能力训练与评测应用。它既支持由 AI 围绕指定主题与难度自动生成测试内容，也支持用户上传自定义文本、指定挖空数量和单词数范围进行智能挖空测试。
 
