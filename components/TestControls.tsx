@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 
 interface TestControlsProps {
-  onGenerate: (topic: string, difficulty: string) => void;
+  onGenerate: (topic: string, difficulty: string, minWords: number, maxWords: number) => void;
   onManualGenerate: (
     title: string, 
     fullText: string, 
@@ -18,6 +18,19 @@ export const TestControls: React.FC<TestControlsProps> = ({ onGenerate, onManual
   // AI State
   const [topic, setTopic] = useState("Artificial Intelligence");
   const [difficulty, setDifficulty] = useState("Intermediate");
+  const [aiMinWords, setAiMinWords] = useState<number>(60);
+  const [aiMaxWords, setAiMaxWords] = useState<number>(100);
+
+  const handleAiSubmit = () => {
+    let min = Math.max(10, Math.min(1000, aiMinWords || 60));
+    let max = Math.max(10, Math.min(1000, aiMaxWords || 100));
+    if (min > max) {
+      const temp = min;
+      min = max;
+      max = temp;
+    }
+    onGenerate(topic, difficulty, min, max);
+  };
 
   // Manual State
   const [manualTitle, setManualTitle] = useState("");
@@ -80,40 +93,93 @@ export const TestControls: React.FC<TestControlsProps> = ({ onGenerate, onManual
 
       <div className="p-6">
         {mode === 'ai' ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end animate-fade-in">
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-600">Topic</label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                placeholder="e.g., Environment, History..."
-              />
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-600">Difficulty</label>
-              <select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white transition-colors"
-              >
-                <option value="Easy">Easy (A2-B1)</option>
-                <option value="Intermediate">Intermediate (B2)</option>
-                <option value="Advanced">Advanced (C1-C2)</option>
-                <option value="Business">Business English</option>
-                <option value="Academic">Academic (TOEFL/IELTS)</option>
-              </select>
+          <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700">Topic (主题或任意场景)</label>
+                <input
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-colors"
+                  placeholder="如: Space Exploration, AI and Society, History..."
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-slate-700">Difficulty (难度等级)</label>
+                <select
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white transition-colors"
+                >
+                  <option value="Easy">Easy (A2-B1 初级)</option>
+                  <option value="Intermediate">Intermediate (B2 中级)</option>
+                  <option value="Advanced">Advanced (C1-C2 高级)</option>
+                  <option value="Business">Business English (行业商务)</option>
+                  <option value="Academic">Academic (TOEFL/IELTS 托福雅思)</option>
+                </select>
+              </div>
             </div>
 
-            <Button 
-              onClick={() => onGenerate(topic, difficulty)} 
-              isLoading={isLoading}
-              className="w-full"
-            >
-              Generate Dictation
-            </Button>
+            {/* Custom Word Count limits */}
+            <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="space-y-0.5">
+                  <h4 className="text-sm font-bold text-slate-800">自定义生成文章字数 (Word Count Range)</h4>
+                  <p className="text-xs text-slate-500">
+                    设定生成听写段落的单词数限制，最高支持 1000 词。
+                  </p>
+                </div>
+                <div className="text-xs font-mono font-black text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-3 py-1 rounded-lg self-start sm:self-auto">
+                  {aiMinWords} - {aiMaxWords} 词
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold text-slate-600">
+                    <span>最少单词数 (Min Words)</span>
+                    <span className="font-mono font-bold text-slate-700">{aiMinWords} 词</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="15"
+                    max="1000"
+                    step="5"
+                    value={aiMinWords}
+                    onChange={(e) => setAiMinWords(Math.max(15, parseInt(e.target.value) || 15))}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold text-slate-600">
+                    <span>最多单词数 (Max Words)</span>
+                    <span className="font-mono font-bold text-slate-700">{aiMaxWords} 词</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="15"
+                    max="1000"
+                    step="5"
+                    value={aiMaxWords}
+                    onChange={(e) => setAiMaxWords(Math.max(15, parseInt(e.target.value) || 15))}
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button 
+                onClick={handleAiSubmit} 
+                isLoading={isLoading}
+                className="w-full md:w-auto px-10 py-3.5 font-bold text-sm tracking-wide rounded-xl shadow-lg shadow-indigo-100/40 transition-all hover:translate-y-[-1px] active:translate-y-[1px]"
+              >
+                一键生成 AI 智能主题听写 (Generate)
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4 animate-fade-in">

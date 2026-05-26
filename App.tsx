@@ -3,7 +3,6 @@ import { TestControls } from './components/TestControls';
 import { ClozeBoard } from './components/ClozeBoard';
 import { DictationPlayer } from './components/DictationPlayer';
 import { Button } from './components/Button';
-import { ApiSettings } from './components/ApiSettings';
 import { generateDictationContent, generateSpeech } from './services/geminiService';
 import { autoDigBlanks } from './services/clozeUtils';
 import { DictationTest, DictationSegment, TestStatus } from './types';
@@ -139,7 +138,7 @@ const App: React.FC = () => {
     return segments.filter(s => s.textBefore || s.wordToFill);
   };
 
-  const handleGenerate = async (topic: string, difficulty: string) => {
+  const handleGenerate = async (topic: string, difficulty: string, minWords?: number, maxWords?: number) => {
     setStatus(TestStatus.GENERATING);
     setScore(null);
     setAudioData(null);
@@ -147,7 +146,7 @@ const App: React.FC = () => {
 
     try {
       // 1. Generate Text
-      const contentResponse = await generateDictationContent(topic, difficulty);
+      const contentResponse = await generateDictationContent(topic, difficulty, minWords, maxWords);
       
       // 2. Parse Segments (AI returns braced content)
       const segments = parseBracedContent(contentResponse.content);
@@ -258,7 +257,6 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <ApiSettings />
             {status === TestStatus.SUBMITTED && score !== null && (
               <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Score</span>
@@ -280,6 +278,8 @@ const App: React.FC = () => {
 
         {testData && (
           <div className="animate-fade-in space-y-8">
+            <DictationPlayer audioData={audioData} fullText={testData?.fullText} status={status} />
+
             <ClozeBoard 
               test={testData} 
               status={status} 
@@ -315,8 +315,6 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      <DictationPlayer audioData={audioData} fullText={testData?.fullText} status={status} />
     </div>
   );
 };
