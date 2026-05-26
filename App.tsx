@@ -3,6 +3,7 @@ import { TestControls } from './components/TestControls';
 import { ClozeBoard } from './components/ClozeBoard';
 import { DictationPlayer } from './components/DictationPlayer';
 import { Button } from './components/Button';
+import { ApiSettings } from './components/ApiSettings';
 import { generateDictationContent, generateSpeech } from './services/geminiService';
 import { autoDigBlanks } from './services/clozeUtils';
 import { DictationTest, DictationSegment, TestStatus } from './types';
@@ -256,14 +257,17 @@ const App: React.FC = () => {
               Dictation Master
             </h1>
           </div>
-          {status === TestStatus.SUBMITTED && score !== null && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Score</span>
-              <span className={`text-2xl font-black ${score >= 80 ? 'text-emerald-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                {score}%
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            <ApiSettings />
+            {status === TestStatus.SUBMITTED && score !== null && (
+              <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Score</span>
+                <span className={`text-xl font-black ${score >= 80 ? 'text-emerald-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  {score}%
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -312,7 +316,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <DictationPlayer audioData={audioData} status={status} />
+      <DictationPlayer audioData={audioData} fullText={testData?.fullText} status={status} />
     </div>
   );
 };
