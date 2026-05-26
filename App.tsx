@@ -4,6 +4,7 @@ import { ClozeBoard } from './components/ClozeBoard';
 import { DictationPlayer } from './components/DictationPlayer';
 import { Button } from './components/Button';
 import { generateDictationContent, generateSpeech } from './services/geminiService';
+import { autoDigBlanks } from './services/clozeUtils';
 import { DictationTest, DictationSegment, TestStatus } from './types';
 import { v4 as uuidv4 } from 'uuid'; 
 
@@ -169,18 +170,32 @@ const App: React.FC = () => {
     }
   };
 
-  const handleManualGenerate = async (title: string, fullText: string, questionText: string) => {
+  const handleManualGenerate = async (
+    title: string, 
+    fullText: string, 
+    questionText: string,
+    autoConfig?: { numBlanks: number; minWords: number; maxWords: number }
+  ) => {
     setStatus(TestStatus.GENERATING);
     setScore(null);
     setAudioData(null);
     setTestData(null);
 
     try {
-      // 1. Parse Segments using alignment
-      const segments = parseAlignedContent(fullText, questionText);
+      let segments: DictationSegment[];
+      let cleanTextForAudio = fullText.replace(/\{/g, '').replace(/\}/g, '');
 
-      // 2. Generate Audio from full text (strip braces if user used them in full text)
-      const cleanTextForAudio = fullText.replace(/\{/g, '').replace(/\}/g, '');
+      if (autoConfig) {
+        // Use auto cloze generator
+        const autoResult = autoDigBlanks(fullText, autoConfig.numBlanks, autoConfig.minWords, autoConfig.maxWords);
+        segments = autoResult.segments;
+        cleanTextForAudio = autoResult.content.replace(/\{/g, '').replace(/\}/g, '');
+      } else {
+        // 1. Parse Segments using alignment
+        segments = parseAlignedContent(fullText, questionText);
+      }
+
+      // 2. Generate Audio from full text
       const audioBase64 = await generateSpeech(cleanTextForAudio);
 
       setTestData({

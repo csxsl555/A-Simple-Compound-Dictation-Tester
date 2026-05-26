@@ -3,7 +3,12 @@ import { Button } from './Button';
 
 interface TestControlsProps {
   onGenerate: (topic: string, difficulty: string) => void;
-  onManualGenerate: (title: string, fullText: string, questionText: string) => void;
+  onManualGenerate: (
+    title: string, 
+    fullText: string, 
+    questionText: string, 
+    autoConfig?: { numBlanks: number; minWords: number; maxWords: number }
+  ) => void;
   isLoading: boolean;
 }
 
@@ -19,12 +24,26 @@ export const TestControls: React.FC<TestControlsProps> = ({ onGenerate, onManual
   const [fullText, setFullText] = useState("");
   const [questionText, setQuestionText] = useState("");
 
+  // Auto Digging State
+  const [clozeMode, setClozeMode] = useState<'traditional' | 'auto'>('traditional');
+  const [numBlanks, setNumBlanks] = useState<number>(5);
+  const [minWords, setMinWords] = useState<number>(1);
+  const [maxWords, setMaxWords] = useState<number>(2);
+
   const handleManualSubmit = () => {
     if (!manualTitle.trim() || !fullText.trim()) {
       alert("Please enter at least a title and the full source text.");
       return;
     }
-    onManualGenerate(manualTitle, fullText, questionText);
+    if (clozeMode === 'auto') {
+      onManualGenerate(manualTitle, fullText, "", {
+        numBlanks,
+        minWords,
+        maxWords
+      });
+    } else {
+      onManualGenerate(manualTitle, fullText, questionText);
+    }
   };
 
   const loadExample = () => {
@@ -99,10 +118,35 @@ export const TestControls: React.FC<TestControlsProps> = ({ onGenerate, onManual
         ) : (
           <div className="space-y-4 animate-fade-in">
              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-slate-800 font-semibold">Create Your Own Test</h3>
+                <h3 className="text-slate-800 font-bold text-lg">Create Your Own Test</h3>
                 <button onClick={loadExample} className="text-xs text-indigo-600 hover:underline font-medium">Load Example</button>
              </div>
              
+             <div className="flex gap-4 p-1 bg-slate-100/80 rounded-lg max-w-sm">
+               <button
+                 type="button"
+                 onClick={() => setClozeMode('traditional')}
+                 className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+                   clozeMode === 'traditional'
+                     ? 'bg-white text-indigo-600 shadow-sm'
+                     : 'text-slate-600 hover:text-slate-900'
+                 }`}
+               >
+                 手动挖空 (Braces/下划线)
+               </button>
+               <button
+                 type="button"
+                 onClick={() => setClozeMode('auto')}
+                 className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+                   clozeMode === 'auto'
+                     ? 'bg-white text-indigo-600 shadow-sm'
+                     : 'text-slate-600 hover:text-slate-900'
+                 }`}
+               >
+                 智能自动挖空 (指定数量/词数)
+               </button>
+             </div>
+
              <div>
                <label className="block text-sm font-semibold text-slate-600 mb-1">Test Title</label>
                <input 
@@ -110,49 +154,114 @@ export const TestControls: React.FC<TestControlsProps> = ({ onGenerate, onManual
                  value={manualTitle}
                  onChange={(e) => setManualTitle(e.target.value)}
                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                 placeholder="My Custom Test"
+                 placeholder="My Custom Test Title"
                />
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-semibold text-slate-600">
-                    Source Text (Full Content)
-                    <span className="text-slate-400 font-normal ml-2 text-xs">Used for audio & answers</span>
-                  </label>
-                  <textarea
-                    value={fullText}
-                    onChange={(e) => setFullText(e.target.value)}
-                    className="w-full h-40 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm"
-                    placeholder="Enter the complete correct text here. If you are not providing a separate Question Text, you can mark answers here with {curly braces}."
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-semibold text-slate-600">
-                    Question Text (Optional)
-                    <span className="text-slate-400 font-normal ml-2 text-xs">Use underscores (____) for blanks</span>
-                  </label>
-                  <textarea
-                    value={questionText}
-                    onChange={(e) => setQuestionText(e.target.value)}
-                    className="w-full h-40 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm font-mono"
-                    placeholder="Example: The quick ______ fox jumps..."
-                  />
-                </div>
-             </div>
+             {clozeMode === 'auto' ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-1">
+                   <label className="block text-sm font-semibold text-slate-600">
+                     Source Text (Full Content)
+                     <span className="text-slate-400 font-normal ml-2 text-xs">用于生成音频与智能挖空</span>
+                   </label>
+                   <textarea
+                     value={fullText}
+                     onChange={(e) => setFullText(e.target.value)}
+                     className="w-full h-44 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm leading-relaxed"
+                     placeholder="请在此输入或粘贴完整的英文段落..."
+                   />
+                 </div>
+                 
+                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-between space-y-3">
+                   <div>
+                     <h4 className="text-sm font-bold text-slate-700 mb-1">Auto-Cloze Configuration (自动挖空配置)</h4>
+                     <p className="text-xs text-slate-500">
+                       设置挖空总数量以及单空包含的单词范围。
+                     </p>
+                   </div>
+                   
+                   <div className="grid grid-cols-3 gap-3">
+                     <div className="space-y-1">
+                       <label className="block text-xs font-bold text-slate-600">挖空总数</label>
+                       <input 
+                         type="number" 
+                         min="1" 
+                         value={numBlanks}
+                         onChange={(e) => setNumBlanks(Math.max(1, parseInt(e.target.value) || 0))}
+                         className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                       />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="block text-xs font-bold text-slate-600">最少单词数/空</label>
+                       <input 
+                         type="number" 
+                         min="1" 
+                         value={minWords}
+                         onChange={(e) => setMinWords(Math.max(1, parseInt(e.target.value) || 0))}
+                         className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                       />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="block text-xs font-bold text-slate-600">最多单词数/空</label>
+                       <input 
+                         type="number" 
+                         min="1" 
+                         value={maxWords}
+                         onChange={(e) => setMaxWords(Math.max(1, parseInt(e.target.value) || 0))}
+                         className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                       />
+                     </div>
+                   </div>
 
-             <div className="pt-2">
+                   <div className="text-xs text-slate-500 leading-relaxed bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                     系统将识别出源文本中的英文单词，并随机挖去 <span className="text-indigo-600 font-semibold">{numBlanks}</span> 个不重叠的空，每个空大小在 <span className="text-indigo-600 font-semibold">{minWords} - {maxWords}</span> 个单词之间。
+                   </div>
+                 </div>
+               </div>
+             ) : (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-semibold text-slate-600">
+                      Source Text (Full Content)
+                      <span className="text-slate-400 font-normal ml-2 text-xs">Used for audio & answers</span>
+                    </label>
+                    <textarea
+                      value={fullText}
+                      onChange={(e) => setFullText(e.target.value)}
+                      className="w-full h-40 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm"
+                      placeholder="Enter the complete correct text here. If you are not providing a separate Question Text, you can mark answers here with {curly braces}."
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-semibold text-slate-600">
+                      Question Text (Optional)
+                      <span className="text-slate-400 font-normal ml-2 text-xs">Use underscores (____) for blanks</span>
+                    </label>
+                    <textarea
+                      value={questionText}
+                      onChange={(e) => setQuestionText(e.target.value)}
+                      className="w-full h-40 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm font-mono"
+                      placeholder="Example: The quick ______ fox jumps..."
+                    />
+                  </div>
+               </div>
+             )}
+
+             <div className="pt-2 flex gap-3">
                 <Button 
                   onClick={handleManualSubmit} 
                   isLoading={isLoading}
-                  className="w-full md:w-auto md:px-8"
+                  className="px-8 font-semibold"
                 >
                   Create Custom Test
                 </Button>
              </div>
              
              <p className="text-xs text-slate-500 italic mt-2">
-               Note: If you provide Question Text, the system will try to match the surrounding text with the Source Text to extract answers.
+               {clozeMode === 'auto' 
+                 ? "Note: The speech audio is synthesized from the complete full text automatically."
+                 : "Note: If you provide Question Text, the system will try to match the surrounding text with the Source Text to extract answers."}
              </p>
           </div>
         )}
