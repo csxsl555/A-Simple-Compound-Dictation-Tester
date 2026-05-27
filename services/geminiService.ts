@@ -6,7 +6,13 @@ export const generateDictationContent = async (
   minWords?: number,
   maxWords?: number
 ): Promise<GeneratedContentResponse> => {
-  // Call server proxy to leverage direct system DeepSeek API
+  // Read custom API credentials from localStorage securely
+  const provider = typeof window !== 'undefined' ? localStorage.getItem('CD_API_PROVIDER') || 'deepseek' : 'deepseek';
+  const deepseekKey = typeof window !== 'undefined' ? localStorage.getItem('CD_DEEPSEEK_KEY') || '' : '';
+  const deepseekEndpoint = typeof window !== 'undefined' ? localStorage.getItem('CD_DEEPSEEK_ENDPOINT') || 'https://api.deepseek.com' : 'https://api.deepseek.com';
+  const geminiKey = typeof window !== 'undefined' ? localStorage.getItem('CD_GEMINI_KEY') || '' : '';
+
+  // Call server proxy to leverage direct system DeepSeek or Gemini API
   const response = await fetch("/api/generate-dictation", {
     method: "POST",
     headers: {
@@ -16,7 +22,11 @@ export const generateDictationContent = async (
       topic,
       difficulty,
       minWords,
-      maxWords
+      maxWords,
+      provider,
+      deepseekKey,
+      deepseekEndpoint,
+      geminiKey
     })
   });
 

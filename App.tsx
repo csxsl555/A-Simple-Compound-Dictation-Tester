@@ -3,6 +3,7 @@ import { TestControls } from './components/TestControls';
 import { ClozeBoard } from './components/ClozeBoard';
 import { DictationPlayer } from './components/DictationPlayer';
 import { Button } from './components/Button';
+import { ApiSettings } from './components/ApiSettings';
 import { generateDictationContent, generateSpeech } from './services/geminiService';
 import { autoDigBlanks } from './services/clozeUtils';
 import { DictationTest, DictationSegment, TestStatus } from './types';
@@ -257,6 +258,7 @@ const App: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4">
+            <ApiSettings />
             {status === TestStatus.SUBMITTED && score !== null && (
               <div className="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Score</span>
